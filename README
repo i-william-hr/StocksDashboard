@@ -1,0 +1,105 @@
+# 📈 Simple Stock & Portfolio Dashboard
+
+A lightweight, Python-based web dashboard to track your stock, crypto, and commodity holdings. Built with **Streamlit**, it provides real-time data visualization, automatic gain/loss calculations based on purchase dates, and a mobile-friendly interface.
+
+## ✨ Features
+
+* **Portfolio Management**: Add/Remove stocks, crypto, or precious metals via the UI.
+* **Performance Tracking**: Calculates Net Worth, Total Gain/Loss (%), and individual asset performance.
+* **Visualizations**: Interactive Pie charts (Allocation), Bar charts (Gains), and Historical Performance graphs.
+* **Automatic Data Fetching**: Uses `yfinance` to pull real-time prices and historical data.
+* **Authentication**: Built-in simple login system with a "Magic URL" bypass for kiosk/monitor displays.
+* **Mobile Optimized**: Responsive design with specific tweaks for iOS/mobile viewing.
+* **Persistent Storage**: Saves portfolio data to a local JSON file (no database required).
+
+## 🛠️ Prerequisites
+
+* Python 3.8+
+* `pip` (Python Package Manager)
+
+## 🚀 Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/yourusername/stock-dashboard.git](https://github.com/yourusername/stock-dashboard.git)
+    cd stock-dashboard
+    ```
+
+2.  **Set up a Virtual Environment (Recommended):**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+3.  **Install Dependencies:**
+    ```bash
+    pip install streamlit yfinance pandas plotly
+    ```
+
+## ⚙️ Configuration
+
+### Authentication
+Open `app.py` and locate the **Security Configuration** section. Update these values to secure your dashboard:
+
+```python
+# --- Security Configuration ---
+AUTH_USER = "admin"       # Set your username
+AUTH_PASS = "password"    # Set your password
+AUTH_TOKEN = "secret_key" # Set your magic URL token
+```
+
+* **Standard Access:** Login via username/password.
+* **Kiosk Access:** Bypass login using `http://ip:8501/?auth=YOUR_TOKEN`.
+
+## 🖥️ Usage
+
+### Quick Start
+To run the dashboard interactively:
+
+```bash
+streamlit run app.py
+```
+
+### Running in Production (Screen/Background)
+A helper script `run.sh` is included to manage the virtual environment and launch parameters automatically.
+
+1.  Make it executable:
+    ```bash
+    chmod +x run.sh
+    ```
+2.  Run it:
+    ```bash
+    ./run.sh
+    ```
+
+### 🌐 Reverse Proxy (Nginx) Support
+If you are hosting this behind Nginx (e.g., at `yourdomain.com/stocks/`), you need to configure Streamlit to know its base URL.
+
+1.  **Edit `run.sh`**:
+    Uncomment or add the `baseUrlPath` argument as noted in the file comments:
+    ```bash
+    streamlit run app.py --server.baseUrlPath /stocks
+    ```
+
+2.  **Nginx Config**:
+    Ensure your Nginx block handles the websocket upgrade headers:
+    ```nginx
+    location /stocks/ {
+        proxy_pass [http://127.0.0.1:8501](http://127.0.0.1:8501);
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+    ```
+
+## 📝 Common Ticker Examples
+When adding assets in the dashboard:
+* **US Stocks**: `AAPL`, `MSFT`, `NVDA`
+* **European Stocks**: Add the suffix (e.g., `AUM5.DE` for Xetra, `ASM.AS` for Amsterdam).
+* **Precious Metals**: `XAUUSD=X` (Gold), `XAGUSD=X` (Silver).
+
+## 📄 License
+MIT License. Feel free to modify and use for personal tracking.
+
+---
+*Disclaimer: This tool is for informational purposes only and does not constitute financial advice.*
