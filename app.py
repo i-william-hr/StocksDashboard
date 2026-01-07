@@ -17,9 +17,9 @@ st.set_page_config(
 PORTFOLIO_FILE = "portfolio.json"
 
 # --- Security Configuration ---
-AUTH_USER = "wm"
-AUTH_PASS = "wm01"
-AUTH_TOKEN = "AeV9huaNwei9iNg7Zaithio2"
+AUTH_USER = "USER"
+AUTH_PASS = "PASS"
+AUTH_TOKEN = "TOKEN"
 
 # --- Authentication Function ---
 def check_authentication():
