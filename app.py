@@ -202,7 +202,7 @@ def main():
         
         portfolio_rows.append({
             "Ticker": ticker,
-            "Name": info['name'],
+            "Name": info.get('name', ticker), # Fallback to ticker if name missing
             "Shares": shares,
             "Buy Date": info['buy_date'],
             "Buy Price": buy_price,
@@ -221,44 +221,22 @@ def main():
 
     df = pd.DataFrame(portfolio_rows)
     
-    # --- Metrics Section (UPDATED) ---
+    # --- Metrics Section ---
     total_gain_loss = total_current_value - total_cost_basis
     total_gain_pct = (total_gain_loss / total_cost_basis) * 100 if total_cost_basis > 0 else 0
     
-    # Identify Winners/Losers
-    top_abs = df.loc[df['Gain/Loss'].idxmax()]  # Max Gain in Euros
-    top_pct = df.loc[df['Gain %'].idxmax()]     # Max Gain in %
-    worst_abs = df.loc[df['Gain/Loss'].idxmin()] # Max Loss in Euros
+    top_abs = df.loc[df['Gain/Loss'].idxmax()]
+    top_pct = df.loc[df['Gain %'].idxmax()]
+    worst_abs = df.loc[df['Gain/Loss'].idxmin()]
 
-    # Layout: 5 Columns to fit all metrics
     col1, col2, col3, col4, col5 = st.columns(5)
     
-    # 1. Net Worth
     col1.metric("Net Worth", f"€{total_current_value:,.2f}")
-    
-    # 2. Total Gain
     col2.metric("Total Gain/Loss", f"€{total_gain_loss:,.2f}", f"{total_gain_pct:+.2f}%")
     
-    # 3. Best Asset € (Euros + %)
-    col3.metric(
-        "Best Asset €", 
-        top_abs['Ticker'], 
-        f"€{top_abs['Gain/Loss']:,.2f} ({top_abs['Gain %']:+.2f}%)"
-    )
-    
-    # 4. Best Asset % (New Column!)
-    col4.metric(
-        "Best Asset %", 
-        top_pct['Ticker'], 
-        f"{top_pct['Gain %']:+.2f}% (€{top_pct['Gain/Loss']:,.2f})"
-    )
-
-    # 5. Worst Asset € (Euros + %)
-    col5.metric(
-        "Worst Asset €", 
-        worst_abs['Ticker'], 
-        f"€{worst_abs['Gain/Loss']:,.2f} ({worst_abs['Gain %']:+.2f}%)"
-    )
+    col3.metric("Best Asset €", top_abs['Ticker'], f"€{top_abs['Gain/Loss']:,.2f} ({top_abs['Gain %']:+.2f}%)")
+    col4.metric("Best Asset %", top_pct['Ticker'], f"{top_pct['Gain %']:+.2f}% (€{top_pct['Gain/Loss']:,.2f})")
+    col5.metric("Worst Asset €", worst_abs['Ticker'], f"€{worst_abs['Gain/Loss']:,.2f} ({worst_abs['Gain %']:+.2f}%)")
 
     st.markdown("---")
 
@@ -266,7 +244,7 @@ def main():
     c1, c2 = st.columns([1, 2])
     with c1:
         st.subheader("Allocation")
-        fig_pie = px.pie(df, values='Current Value', names='Ticker', hole=0.4)
+        fig_pie = px.pie(df, values='Current Value', names='Ticker', hole=0.4, hover_data=['Name'])
         fig_pie.update_layout(margin=dict(t=20, b=20, l=20, r=20))
         st.plotly_chart(fig_pie, use_container_width=True)
         
@@ -274,13 +252,14 @@ def main():
         st.subheader("Gains")
         df['Color'] = df['Gain/Loss'].apply(lambda x: 'Profit' if x >= 0 else 'Loss')
         color_map = {'Profit': '#00CC96', 'Loss': '#EF553B'}
-        fig_bar = px.bar(df, x='Ticker', y='Gain/Loss', color='Color', color_discrete_map=color_map)
+        fig_bar = px.bar(df, x='Ticker', y='Gain/Loss', color='Color', color_discrete_map=color_map, hover_data=['Name'])
         fig_bar.update_layout(margin=dict(t=20, b=20, l=20, r=20))
         st.plotly_chart(fig_bar, use_container_width=True)
 
+    # --- Details Table (Updated with Name) ---
     st.subheader("Details")
     st.dataframe(
-        df[['Ticker', 'Shares', 'Buy Price', 'Current Price', 'Gain/Loss', 'Gain %']],
+        df[['Ticker', 'Name', 'Shares', 'Buy Price', 'Current Price', 'Gain/Loss', 'Gain %']], # <--- Added 'Name' back here
         use_container_width=True,
         hide_index=True,
         column_config={
